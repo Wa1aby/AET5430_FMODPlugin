@@ -130,7 +130,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="PluginProcessing.cpp" />
+    <ClCompile Include="KellyHardClip_Exsample.cpp" />
+    <ClCompile Include="PluginProcessor.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
