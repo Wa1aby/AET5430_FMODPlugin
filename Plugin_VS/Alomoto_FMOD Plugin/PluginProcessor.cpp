@@ -1,16 +1,11 @@
 // 
-// Scrungler - True Stereo Reverb
+// Scrungler - Simple Delay Plugin with Resonant Low-Pass Filter
 // Created by Elliot Alomoto 4/9/26
 //
 
 #include "fmod.hpp"
-
 #include <math.h>
-#include <stdio.h>
-#include <string>
 #include <vector>
-#include <iostream>
-#include <fstream>
 
 // dB to linear conversion helpers
 #define DECIBELS_TO_LINEAR(x) powf(10.0f, (x) / 20.0f)
@@ -27,23 +22,21 @@ extern "C"
 FMOD_RESULT Create_Callback(FMOD_DSP_STATE* dsp_state);
 FMOD_RESULT Release_Callback(FMOD_DSP_STATE* dsp_state);
 FMOD_RESULT Reset_Callback(FMOD_DSP_STATE* dsp_state);
-FMOD_RESULT Read_Callback(FMOD_DSP_STATE* dsp_state, float* inbuffer, float* outbuffer, unsigned int length, int inchannels, int* outchannels);
 FMOD_RESULT Process_Callback(FMOD_DSP_STATE* dsp_state, unsigned int length, const FMOD_DSP_BUFFER_ARRAY* inbufferarray, FMOD_DSP_BUFFER_ARRAY* outbufferarray, FMOD_BOOL inputsidle, FMOD_DSP_PROCESS_OPERATION op);
+FMOD_RESULT SetFloat_Callback(FMOD_DSP_STATE* dsp_state, int index, float value);
+FMOD_RESULT GetFloat_Callback(FMOD_DSP_STATE* dsp_state, int index, float* value, char* valuestr);
 FMOD_RESULT SetPosition_Callback(FMOD_DSP_STATE* dsp_state, unsigned int pos);
 FMOD_RESULT ShouldIProcess_Callback(FMOD_DSP_STATE* dsp_state, FMOD_BOOL inputsidle, unsigned int length, FMOD_CHANNELMASK inmask, int inchannels, FMOD_SPEAKERMODE speakermode);
-
-FMOD_RESULT SetFloat_Callback(FMOD_DSP_STATE* dsp_state, int index, float value);
-FMOD_RESULT SetInt_Callback(FMOD_DSP_STATE* dsp_state, int index, int value);
-FMOD_RESULT SetBool_Callback(FMOD_DSP_STATE* dsp_state, int index, FMOD_BOOL value);
-FMOD_RESULT SetData_Callback(FMOD_DSP_STATE* dsp_state, int index, void* data, unsigned int length);
-FMOD_RESULT GetFloat_Callback(FMOD_DSP_STATE* dsp_state, int index, float* value, char* valuestr);
-FMOD_RESULT GetInt_Callback(FMOD_DSP_STATE* dsp_state, int index, int* value, char* valuestr);
-FMOD_RESULT GetBool_Callback(FMOD_DSP_STATE* dsp_state, int index, FMOD_BOOL* value, char* valuestr);
-FMOD_RESULT GetData_Callback(FMOD_DSP_STATE* dsp_state, int index, void** data, unsigned int* length, char* valuestr);
-
-FMOD_RESULT SystemRegister_Callback(FMOD_DSP_STATE* dsp_state);
-FMOD_RESULT SystemDeregister_Callback(FMOD_DSP_STATE* dsp_state);
-FMOD_RESULT SystemMix_Callback(FMOD_DSP_STATE* dsp_state, int stage);
+FMOD_RESULT SetInt_Callback(FMOD_DSP_STATE* dsp_state, int index, int value) { return FMOD_OK; }
+FMOD_RESULT SetBool_Callback(FMOD_DSP_STATE* dsp_state, int index, FMOD_BOOL value) { return FMOD_OK; }
+FMOD_RESULT SetData_Callback(FMOD_DSP_STATE* dsp_state, int index, void* data, unsigned int length) { return FMOD_OK; }
+FMOD_RESULT GetInt_Callback(FMOD_DSP_STATE* dsp_state, int index, int* value, char* valuestr) { return FMOD_OK; }
+FMOD_RESULT GetBool_Callback(FMOD_DSP_STATE* dsp_state, int index, FMOD_BOOL* value, char* valuestr) { return FMOD_OK; }
+FMOD_RESULT GetData_Callback(FMOD_DSP_STATE* dsp_state, int index, void** data, unsigned int* length, char* valuestr) { return FMOD_OK; }
+FMOD_RESULT SystemRegister_Callback(FMOD_DSP_STATE* dsp_state) { return FMOD_OK; }
+FMOD_RESULT SystemDeregister_Callback(FMOD_DSP_STATE* dsp_state) { return FMOD_OK; }
+FMOD_RESULT SystemMix_Callback(FMOD_DSP_STATE* dsp_state, int stage) { return FMOD_OK; }
+FMOD_RESULT Read_Callback(FMOD_DSP_STATE* dsp_state, float* inbuffer, float* outbuffer, unsigned int length, int inchannels, int* outchannels) { return FMOD_OK; }
 
 // ++++++++++++++++++
 //    Parameters 
@@ -51,73 +44,64 @@ FMOD_RESULT SystemMix_Callback(FMOD_DSP_STATE* dsp_state, int stage);
 
 enum
 {
-    PARAM_INPUT_DIFFUSE_1 = 0,
-    PARAM_INPUT_DIFFUSE_2,
-    PARAM_DECAY_DIFFUSE_1,
-    PARAM_DECAY_DIFFUSE_2,
-    PARAM_BANDWIDTH,
+    PARAM_DELAY_TIME = 0,
     PARAM_DECAY,
+    PARAM_BANDWIDTH,
+    PARAM_Q,
     PARAM_DRY,
     PARAM_WET,
-    PARAM_PRE_DELAY,
     NUM_PARAMS
 };
 
 // Declarations 
-static FMOD_DSP_PARAMETER_DESC p_inputDiffuse1, p_inputDiffuse2,
-p_decayDiffuse1, p_decayDiffuse2, p_bandwidth,
-p_decay, p_dry, p_wet, p_preDelay;
+static FMOD_DSP_PARAMETER_DESC p_delayTime, p_decay, p_bandwidth, p_q, p_dry, p_wet;
 
 // Pointer Array
 static FMOD_DSP_PARAMETER_DESC* PluginsParameters[NUM_PARAMS] =
 {
-    &p_inputDiffuse1,
-    &p_inputDiffuse2,
-    &p_decayDiffuse1,
-    &p_decayDiffuse2,
-    &p_bandwidth,
+    &p_delayTime,
     &p_decay,
+    &p_bandwidth,
+    &p_q,
     &p_dry,
-    &p_wet,
-    &p_preDelay
+    &p_wet
 };
 
 // DSP Description
 static FMOD_DSP_DESCRIPTION PluginCallbacks =
 {
-    FMOD_PLUGIN_SDK_VERSION,    // version
-    "Scrungler Reverb",         // name
-    0x00010000,                 // plugin version
-    1,                          // no. input buffers
-    1,                          // no. output buffers
-    Create_Callback,            // create
-    Release_Callback,           // release
-    Reset_Callback,             // reset
-    Read_Callback,              // read
-    Process_Callback,           // process
-    SetPosition_Callback,       // setposition
-    NUM_PARAMS,                 // no. parameter 
-    PluginsParameters,          // pointer to parameter descriptions
-    SetFloat_Callback,          // Set float
-    SetInt_Callback,            // Set int
-    SetBool_Callback,           // Set bool
-    SetData_Callback,           // Set data
-    GetFloat_Callback,          // Get float
-    GetInt_Callback,            // Get int
-    GetBool_Callback,           // Get bool
-    GetData_Callback,           // Get data
-    ShouldIProcess_Callback,    // Check states before processing
-    0,                          // User data
-    SystemRegister_Callback,    // System register
-    SystemDeregister_Callback,  // System deregister
-    SystemMix_Callback          // Mixer thread execute / after execute
+    FMOD_PLUGIN_SDK_VERSION,
+    "Scrungler Delay",
+    0x00010000,
+    1,
+    1,
+    Create_Callback,
+    Release_Callback,
+    Reset_Callback,
+    Read_Callback,
+    Process_Callback,
+    SetPosition_Callback,
+    NUM_PARAMS,
+    PluginsParameters,
+    SetFloat_Callback,
+    SetInt_Callback,
+    SetBool_Callback,
+    SetData_Callback,
+    GetFloat_Callback,
+    GetInt_Callback,
+    GetBool_Callback,
+    GetData_Callback,
+    ShouldIProcess_Callback,
+    0,
+    SystemRegister_Callback,
+    SystemDeregister_Callback,
+    SystemMix_Callback
 };
 
 // ++++++++++++++++++
-//    Plugin Class (Processing) 
+//    Delay Buffer
 //+++++++++++++++++++
 
-// Delay Buffer
 class DelayBuffer
 {
 public:
@@ -126,28 +110,123 @@ public:
     const float& operator[](int index) const { return m_buffer[index]; }
     void Clear()
     {
-        for (size_t i = 0; i < m_buffer.size(); i++) m_buffer[i] = 0.0f;
+        for (size_t i = 0; i < m_buffer.size(); i++)
+            m_buffer[i] = 0.0f;
     }
-
 private:
     std::vector<float> m_buffer;
 };
 
-// Delay Unit
+// ++++++++++++++++++
+//    Resonant Low-Pass Filter (2-pole with Q)
+//+++++++++++++++++++
+
+class ResonantLowPassFilter
+{
+public:
+    ResonantLowPassFilter()
+        : m_x1(0.0f), m_x2(0.0f), m_y1(0.0f), m_y2(0.0f)
+        , m_cutoff(1.0f), m_q(0.707f), m_a0(1.0f), m_a1(0.0f), m_a2(0.0f)
+        , m_b1(0.0f), m_b2(0.0f), m_sampleRate(44100.0f)
+    {
+    }
+
+    void SetSampleRate(float sampleRate)
+    {
+        m_sampleRate = sampleRate;
+        UpdateCoefficients();
+    }
+
+    void SetCutoff(float cutoff)  // 0 to 1 (0 = lowest, 1 = highest/brightest)
+    {
+        m_cutoff = cutoff;
+        UpdateCoefficients();
+    }
+
+    void SetQ(float q)  // Q factor (resonance), 0.5 to 10
+    {
+        m_q = q;
+        UpdateCoefficients();
+    }
+
+    float Process(float input)
+    {
+        // Direct Form II Transposed
+        float output = m_a0 * input + m_a1 * m_x1 + m_a2 * m_x2 - m_b1 * m_y1 - m_b2 * m_y2;
+
+        // Update state
+        m_x2 = m_x1;
+        m_x1 = input;
+        m_y2 = m_y1;
+        m_y1 = output;
+
+        return output;
+    }
+
+    void Reset()
+    {
+        m_x1 = m_x2 = m_y1 = m_y2 = 0.0f;
+    }
+
+private:
+    void UpdateCoefficients()
+    {
+        // Convert 0-1 cutoff to actual frequency (20Hz to Nyquist)
+        float nyquist = m_sampleRate * 0.5f;
+        float minFreq = 20.0f;
+        float maxFreq = nyquist;
+
+        // Exponential mapping for better control
+        float freq = minFreq * powf(maxFreq / minFreq, m_cutoff);
+
+        // Clamp frequency
+        if (freq < minFreq) freq = minFreq;
+        if (freq > nyquist) freq = nyquist;
+
+        // Pre-warped angular frequency
+        float omega = 2.0f * 3.14159265359f * freq / m_sampleRate;
+        float sinOmega = sinf(omega);
+        float cosOmega = cosf(omega);
+
+        // Q factor (resonance)
+        float alpha = sinOmega / (2.0f * m_q);
+
+        // Calculate coefficients for low-pass filter
+        float b0 = (1.0f - cosOmega) * 0.5f;
+        float b1 = 1.0f - cosOmega;
+        float b2 = (1.0f - cosOmega) * 0.5f;
+        float a0 = 1.0f + alpha;
+        float a1 = -2.0f * cosOmega;
+        float a2 = 1.0f - alpha;
+
+        // Normalize
+        m_a0 = b0 / a0;
+        m_a1 = b1 / a0;
+        m_a2 = b2 / a0;
+        m_b1 = a1 / a0;
+        m_b2 = a2 / a0;
+    }
+
+    float m_x1, m_x2, m_y1, m_y2;
+    float m_cutoff, m_q;
+    float m_a0, m_a1, m_a2, m_b1, m_b2;
+    float m_sampleRate;
+};
+
+// ++++++++++++++++++
+//    Delay Unit
+//+++++++++++++++++++
+
 class DelayUnit {
 public:
     DelayUnit();
     ~DelayUnit();
-
     void Init(FMOD_DSP_STATE* dsp_state, int maxSamples);
     void CreateBuffers(int channels);
     void SetDelayTime(float ms);
-    void SetDelaySamples(int samples);
     void SetFeedback(float feedback);
-    float GetDelayTime() const;
     void WriteDelay(float value);
     float GetDelayedSample();
-    float GetDelayedSampleAt(int sampleOffset);
     void TickChannel();
     void Clear();
 
@@ -155,23 +234,22 @@ private:
     DelayBuffer* m_delayBuffer;
     int m_writePos;
     float m_delayTime;
-    int m_delaySamples;
     float m_feedbackAmount;
     int m_sampleRate;
     int m_maxSamples;
     int m_numChannels;
+    int m_currentDelaySamples;
 };
 
-// Delay Unit Implementation 
 DelayUnit::DelayUnit()
     : m_delayBuffer(nullptr)
     , m_writePos(0)
-    , m_delayTime(10.0f)
-    , m_delaySamples(0)
+    , m_delayTime(500.0f)
     , m_feedbackAmount(0.0f)
     , m_sampleRate(44100)
     , m_maxSamples(0)
     , m_numChannels(-1)
+    , m_currentDelaySamples(0)
 {
 }
 
@@ -182,10 +260,13 @@ DelayUnit::~DelayUnit()
 
 void DelayUnit::Init(FMOD_DSP_STATE* dsp_state, int maxSamples)
 {
-    FMOD_DSP_GETSAMPLERATE(dsp_state, &m_sampleRate);
+    int sampleRate;
+    FMOD_DSP_GETSAMPLERATE(dsp_state, &sampleRate);
+    m_sampleRate = sampleRate;
     m_maxSamples = maxSamples;
     m_writePos = 0;
     m_numChannels = -1;
+    m_currentDelaySamples = 0;
 }
 
 void DelayUnit::CreateBuffers(int channels)
@@ -202,29 +283,32 @@ void DelayUnit::CreateBuffers(int channels)
 void DelayUnit::SetDelayTime(float ms)
 {
     m_delayTime = ms;
-    m_delaySamples = (int)(ms * 0.001f * m_sampleRate);
-}
 
-void DelayUnit::SetDelaySamples(int samples)
-{
-    m_delaySamples = samples;
-    m_delayTime = (float)samples * 1000.0f / (float)m_sampleRate;
+    int desiredSamples = (int)(ms * 0.001f * m_sampleRate);
+
+    if (desiredSamples > m_maxSamples)
+        desiredSamples = m_maxSamples;
+    if (desiredSamples < 0)
+        desiredSamples = 0;
+
+    m_currentDelaySamples = desiredSamples;
 }
 
 void DelayUnit::SetFeedback(float feedback)
 {
+    // Clamp feedback to prevent runaway
+    if (feedback < 0.0f) feedback = 0.0f;
+    if (feedback > 0.95f) feedback = 0.95f;
     m_feedbackAmount = feedback;
-}
-
-float DelayUnit::GetDelayTime() const
-{
-    return m_delayTime;
 }
 
 void DelayUnit::WriteDelay(float value)
 {
     if (m_delayBuffer)
     {
+        // Soft clip to prevent buildup
+        if (value > 1.0f) value = 1.0f;
+        if (value < -1.0f) value = -1.0f;
         (*m_delayBuffer)[m_writePos] = value;
     }
 }
@@ -233,28 +317,15 @@ float DelayUnit::GetDelayedSample()
 {
     if (!m_delayBuffer || m_numChannels <= 0) return 0.0f;
 
-    int readPos = m_writePos - (m_delaySamples * m_numChannels);
+    if (m_currentDelaySamples <= 0) return 0.0f;
 
-    while (readPos < 0) readPos += (m_maxSamples * m_numChannels);
-    while (readPos >= (m_maxSamples * m_numChannels)) readPos -= (m_maxSamples * m_numChannels);
+    int readPos = m_writePos - (m_currentDelaySamples * m_numChannels);
 
-    float sample = (*m_delayBuffer)[readPos];
+    int bufferSize = m_maxSamples * m_numChannels;
+    while (readPos < 0) readPos += bufferSize;
+    while (readPos >= bufferSize) readPos -= bufferSize;
 
-    // Safety limiter
-    if (sample > 1.0f) sample = 1.0f;
-    if (sample < -1.0f) sample = -1.0f;
-
-    return sample;
-}
-
-float DelayUnit::GetDelayedSampleAt(int sampleOffset)
-{
-    if (!m_delayBuffer || m_numChannels <= 0) return 0.0f;
-
-    int readPos = m_writePos - (sampleOffset * m_numChannels);
-
-    while (readPos < 0) readPos += (m_maxSamples * m_numChannels);
-    while (readPos >= (m_maxSamples * m_numChannels)) readPos -= (m_maxSamples * m_numChannels);
+    if (readPos < 0 || readPos >= bufferSize) return 0.0f;
 
     return (*m_delayBuffer)[readPos];
 }
@@ -278,7 +349,7 @@ void DelayUnit::Clear()
 }
 
 // ++++++++++++++++++
-//    Main Plugin Class - True Stereo Reverb
+//    Main Plugin Class
 //+++++++++++++++++++
 
 class Plugin
@@ -286,263 +357,124 @@ class Plugin
 public:
     Plugin();
     ~Plugin();
-
     void Init(FMOD_DSP_STATE* dsp_state);
-    void Release();
     void Process(float* inbuffer, float* outbuffer, unsigned int length, int channels);
     void SetParameterFloat(int index, float value);
     void GetParameterFloat(int index, float* value);
+    void ClearDelay();  // Public method to clear delay buffer
 
 private:
-    // Delay lines for reverb
-    DelayUnit* m_predelay;
-    DelayUnit* m_diffuseDelay11;
-    DelayUnit* m_diffuseDelay12;
-    DelayUnit* m_diffuseDelay21;
-    DelayUnit* m_diffuseDelay22;
-    DelayUnit* m_reverbDiffuse1;
-    DelayUnit* m_reverbDiffuse2;
-    DelayUnit* m_reverbDelay1;
-    DelayUnit* m_reverbDelay2;
-    DelayUnit* m_reverbDelay3;
-    DelayUnit* m_reverbDelay4;
-
-    // Parameters
-    float m_inputDiffuse1;
-    float m_inputDiffuse2;
-    float m_decayDiffuse1;
-    float m_decayDiffuse2;
-    float m_bandwidth;
-    float m_decay;
+    DelayUnit* m_delay;
+    ResonantLowPassFilter* m_filters;
     float m_dry;
     float m_wet;
-    float m_preDelay;
-
-    bool m_initialized;
+    float m_feedback;
+    float m_delayTime;
+    float m_bandwidth;
+    float m_q;
+    int m_numChannels;
+    float m_sampleRate;
+    float m_feedbackDamping;
 };
 
-// Plugin Implementation  
 Plugin::Plugin()
-    : m_predelay(nullptr)
-    , m_diffuseDelay11(nullptr)
-    , m_diffuseDelay12(nullptr)
-    , m_diffuseDelay21(nullptr)
-    , m_diffuseDelay22(nullptr)
-    , m_reverbDiffuse1(nullptr)
-    , m_reverbDiffuse2(nullptr)
-    , m_reverbDelay1(nullptr)
-    , m_reverbDelay2(nullptr)
-    , m_reverbDelay3(nullptr)
-    , m_reverbDelay4(nullptr)
-    , m_inputDiffuse1(0.5f)
-    , m_inputDiffuse2(0.5f)
-    , m_decayDiffuse1(0.5f)
-    , m_decayDiffuse2(0.5f)
-    , m_bandwidth(0.5f)
-    , m_decay(0.5f)
+    : m_delay(nullptr)
+    , m_filters(nullptr)
     , m_dry(1.0f)
     , m_wet(0.3f)
-    , m_preDelay(10.0f)
-    , m_initialized(false)
+    , m_feedback(0.0f)
+    , m_delayTime(500.0f)
+    , m_bandwidth(1.0f)
+    , m_q(0.707f)
+    , m_numChannels(0)
+    , m_sampleRate(44100.0f)
+    , m_feedbackDamping(0.5f)
 {
 }
 
 Plugin::~Plugin()
 {
-    Release();
+    delete m_delay;
+    delete[] m_filters;
 }
 
 void Plugin::Init(FMOD_DSP_STATE* dsp_state)
 {
-    if (m_initialized) return;
-
-    // Create all delay units
-    m_predelay = new DelayUnit();
-    m_diffuseDelay11 = new DelayUnit();
-    m_diffuseDelay12 = new DelayUnit();
-    m_diffuseDelay21 = new DelayUnit();
-    m_diffuseDelay22 = new DelayUnit();
-    m_reverbDiffuse1 = new DelayUnit();
-    m_reverbDiffuse2 = new DelayUnit();
-    m_reverbDelay1 = new DelayUnit();
-    m_reverbDelay2 = new DelayUnit();
-    m_reverbDelay3 = new DelayUnit();
-    m_reverbDelay4 = new DelayUnit();
-
-    // Initialize with max delays (in samples at 44.1kHz)
-    m_predelay->Init(dsp_state, 88200);           // 2 seconds max pre-delay
-    m_diffuseDelay11->Init(dsp_state, 2000);      // Diffusion delays (short)
-    m_diffuseDelay12->Init(dsp_state, 2000);
-    m_diffuseDelay21->Init(dsp_state, 2000);
-    m_diffuseDelay22->Init(dsp_state, 2000);
-    m_reverbDiffuse1->Init(dsp_state, 2000);
-    m_reverbDiffuse2->Init(dsp_state, 2000);
-    m_reverbDelay1->Init(dsp_state, 88200);       // Long reverb delays
-    m_reverbDelay2->Init(dsp_state, 88200);
-    m_reverbDelay3->Init(dsp_state, 88200);
-    m_reverbDelay4->Init(dsp_state, 88200);
-
-    // Set fixed delay times (classic reverb values)
-    m_diffuseDelay11->SetDelaySamples(143);
-    m_diffuseDelay12->SetDelaySamples(108);
-    m_diffuseDelay21->SetDelaySamples(380);
-    m_diffuseDelay22->SetDelaySamples(278);
-    m_reverbDiffuse1->SetDelaySamples(673);
-    m_reverbDiffuse2->SetDelaySamples(909);
-    m_reverbDelay1->SetDelaySamples(4454);
-    m_reverbDelay2->SetDelaySamples(4217);
-    m_reverbDelay3->SetDelaySamples(3721);
-    m_reverbDelay4->SetDelaySamples(3164);
-
-    // Set feedback amounts
-    m_diffuseDelay11->SetFeedback(0.0f);
-    m_diffuseDelay12->SetFeedback(0.0f);
-    m_diffuseDelay21->SetFeedback(0.0f);
-    m_diffuseDelay22->SetFeedback(0.0f);
-    m_reverbDiffuse1->SetFeedback(0.0f);
-    m_reverbDiffuse2->SetFeedback(0.0f);
-
-    m_initialized = true;
+    int sampleRate;
+    FMOD_DSP_GETSAMPLERATE(dsp_state, &sampleRate);
+    m_sampleRate = (float)sampleRate;
+    m_delay = new DelayUnit();
+    m_delay->Init(dsp_state, 88200);
 }
 
-void Plugin::Release()
+void Plugin::ClearDelay()
 {
-    delete m_predelay; m_predelay = nullptr;
-    delete m_diffuseDelay11; m_diffuseDelay11 = nullptr;
-    delete m_diffuseDelay12; m_diffuseDelay12 = nullptr;
-    delete m_diffuseDelay21; m_diffuseDelay21 = nullptr;
-    delete m_diffuseDelay22; m_diffuseDelay22 = nullptr;
-    delete m_reverbDiffuse1; m_reverbDiffuse1 = nullptr;
-    delete m_reverbDiffuse2; m_reverbDiffuse2 = nullptr;
-    delete m_reverbDelay1; m_reverbDelay1 = nullptr;
-    delete m_reverbDelay2; m_reverbDelay2 = nullptr;
-    delete m_reverbDelay3; m_reverbDelay3 = nullptr;
-    delete m_reverbDelay4; m_reverbDelay4 = nullptr;
-
-    m_initialized = false;
+    if (m_delay)
+    {
+        m_delay->Clear();
+    }
 }
 
 void Plugin::Process(float* inbuffer, float* outbuffer, unsigned int length, int channels)
 {
-    if (!m_initialized) return;
-    if (channels < 1) return;
+    if (!m_delay) return;
 
-    // Create buffers for all delay units
-    m_predelay->CreateBuffers(channels);
-    m_diffuseDelay11->CreateBuffers(channels);
-    m_diffuseDelay12->CreateBuffers(channels);
-    m_diffuseDelay21->CreateBuffers(channels);
-    m_diffuseDelay22->CreateBuffers(channels);
-    m_reverbDiffuse1->CreateBuffers(channels);
-    m_reverbDiffuse2->CreateBuffers(channels);
-    m_reverbDelay1->CreateBuffers(channels);
-    m_reverbDelay2->CreateBuffers(channels);
-    m_reverbDelay3->CreateBuffers(channels);
-    m_reverbDelay4->CreateBuffers(channels);
+    if (m_numChannels != channels)
+    {
+        m_numChannels = channels;
+        delete[] m_filters;
+        m_filters = new ResonantLowPassFilter[channels];
 
-    // Update pre-delay time
-    m_predelay->SetDelayTime(m_preDelay);
+        for (int i = 0; i < channels; i++)
+        {
+            m_filters[i].SetSampleRate(m_sampleRate);
+            m_filters[i].SetCutoff(m_bandwidth);
+            m_filters[i].SetQ(m_q);
+        }
+    }
+
+    m_delay->SetDelayTime(m_delayTime);
+    m_delay->SetFeedback(m_feedback);
+    m_delay->CreateBuffers(channels);
 
     for (unsigned int i = 0; i < length; i++)
     {
         for (int ch = 0; ch < channels; ch++)
         {
             float input = *inbuffer;
-            float wetSignal = 0.0f;
+            float delayed = m_delay->GetDelayedSample();
 
-            // === PRE-DELAY ===
-            float preDelayed = m_predelay->GetDelayedSample();
-            m_predelay->WriteDelay(input);
-            m_predelay->TickChannel();
+            // Apply resonant low-pass filter to delayed signal only
+            float filteredDelayed = delayed;
+            if (m_bandwidth < 0.99f)
+            {
+                filteredDelayed = m_filters[ch].Process(delayed);
+            }
 
-            // === INPUT DIFFUSION NETWORK ===
-            // Diffuse stage 1
-            float diff1In = preDelayed;
-            float diff1Out = m_diffuseDelay11->GetDelayedSample();
-            float diff1Top = (-diff1Out * m_inputDiffuse1) + diff1In;
-            float diff1Bottom = diff1Out + (diff1Top * m_inputDiffuse1);
-            m_diffuseDelay11->WriteDelay(diff1Top);
-            m_diffuseDelay11->TickChannel();
+            // Apply damping to feedback to prevent runaway
+            float dampedFeedback = m_feedback * 0.95f;
 
-            // Diffuse stage 2
-            float diff2In = diff1Bottom;
-            float diff2Out = m_diffuseDelay12->GetDelayedSample();
-            float diff2Top = (-diff2Out * m_inputDiffuse1) + diff2In;
-            float diff2Bottom = diff2Out + (diff2Top * m_inputDiffuse1);
-            m_diffuseDelay12->WriteDelay(diff2Top);
-            m_diffuseDelay12->TickChannel();
+            // Output mix
+            float output = (input * m_dry) + (filteredDelayed * m_wet);
 
-            // Diffuse stage 3
-            float diff3In = diff2Bottom;
-            float diff3Out = m_diffuseDelay21->GetDelayedSample();
-            float diff3Top = (-diff3Out * m_inputDiffuse2) + diff3In;
-            float diff3Bottom = diff3Out + (diff3Top * m_inputDiffuse2);
-            m_diffuseDelay21->WriteDelay(diff3Top);
-            m_diffuseDelay21->TickChannel();
+            // Write to delay with damped feedback
+            float feedbackSignal = (filteredDelayed * dampedFeedback);
 
-            // Diffuse stage 4
-            float diff4In = diff3Bottom;
-            float diff4Out = m_diffuseDelay22->GetDelayedSample();
-            float diff4Top = (-diff4Out * m_inputDiffuse2) + diff4In;
-            float diff4Bottom = diff4Out + (diff4Top * m_inputDiffuse2);
-            m_diffuseDelay22->WriteDelay(diff4Top);
-            m_diffuseDelay22->TickChannel();
+            // Soft clip feedback signal
+            if (feedbackSignal > 0.9f) feedbackSignal = 0.9f;
+            if (feedbackSignal < -0.9f) feedbackSignal = -0.9f;
 
-            // === REVERB NETWORK ===
-            float reverbIn = diff4Bottom;
+            m_delay->WriteDelay(input + feedbackSignal);
 
-            // Left channel reverb path
-            float revDiff1In = reverbIn + (m_reverbDelay4->GetDelayedSample() * m_decay);
-            float revDiff1Out = m_reverbDiffuse1->GetDelayedSample();
-            float revDiff1Top = (revDiff1Out * m_decayDiffuse1) + revDiff1In;
-            float revDiff1Bottom = (-revDiff1Top * m_decayDiffuse1) + revDiff1Out;
-            m_reverbDiffuse1->WriteDelay(revDiff1Top);
-            m_reverbDiffuse1->TickChannel();
-
-            float revDelay1Out = m_reverbDelay1->GetDelayedSample();
-            float revDelay1Filtered = revDelay1Out * m_bandwidth;
-            m_reverbDelay1->WriteDelay(revDiff1Bottom);
-            m_reverbDelay1->TickChannel();
-
-            // Right channel reverb path
-            float revDiff2In = reverbIn + (revDelay1Filtered * m_decay);
-            float revDiff2Out = m_reverbDiffuse2->GetDelayedSample();
-            float revDiff2Top = (revDiff2Out * m_decayDiffuse2) + revDiff2In;
-            float revDiff2Bottom = (-revDiff2Top * m_decayDiffuse2) + revDiff2Out;
-            m_reverbDiffuse2->WriteDelay(revDiff2Top);
-            m_reverbDiffuse2->TickChannel();
-
-            float revDelay2Out = m_reverbDelay2->GetDelayedSample();
-            float revDelay2Filtered = revDelay2Out * m_bandwidth;
-            m_reverbDelay2->WriteDelay(revDiff2Bottom);
-            m_reverbDelay2->TickChannel();
-
-            // Second diffusion stage
-            float revDiff3In = revDelay2Filtered;
-            float revDiff3Out = m_reverbDelay3->GetDelayedSample();
-            float revDelay3Filtered = revDiff3Out * m_bandwidth;
-            m_reverbDelay3->WriteDelay(revDiff3In);
-            m_reverbDelay3->TickChannel();
-
-            float revDiff4In = revDelay3Filtered;
-            float revDiff4Out = m_reverbDelay4->GetDelayedSample();
-            float revDelay4Filtered = revDiff4Out * m_bandwidth;
-            m_reverbDelay4->WriteDelay(revDiff4In);
-            m_reverbDelay4->TickChannel();
-
-            wetSignal = revDelay4Filtered;
-
-            // === OUTPUT MIX ===
-            float output = (input * m_dry) + (wetSignal * m_wet);
-
-            // Soft limit to prevent clipping
-            if (output > 0.95f) output = 0.95f;
-            if (output < -0.95f) output = -0.95f;
+            // Soft clip output
+            if (output > 1.0f) output = 1.0f;
+            if (output < -1.0f) output = -1.0f;
 
             *outbuffer = output;
 
             inbuffer++;
             outbuffer++;
+            m_delay->TickChannel();
         }
     }
 }
@@ -553,42 +485,36 @@ void Plugin::SetParameterFloat(int index, float value)
     {
     case PARAM_DRY:
         m_dry = DECIBELS_TO_LINEAR(value);
-        m_dry = (m_dry < 0.0f) ? 0.0f : (m_dry > 1.0f) ? 1.0f : m_dry;
+        if (m_dry < 0.0f) m_dry = 0.0f;
+        if (m_dry > 1.0f) m_dry = 1.0f;
         break;
-
     case PARAM_WET:
         m_wet = DECIBELS_TO_LINEAR(value);
-        m_wet = (m_wet < 0.0f) ? 0.0f : (m_wet > 1.0f) ? 1.0f : m_wet;
+        if (m_wet < 0.0f) m_wet = 0.0f;
+        if (m_wet > 1.0f) m_wet = 1.0f;
         break;
-
     case PARAM_DECAY:
-        m_decay = (value < 0.0f) ? 0.0f : (value > 0.95f) ? 0.95f : value;
+        m_feedback = (value < 0.0f) ? 0.0f : (value > 0.8f) ? 0.8f : value;
         break;
-
-    case PARAM_PRE_DELAY:
-        m_preDelay = (value < 0.0f) ? 0.0f : (value > 2000.0f) ? 2000.0f : value;
+    case PARAM_DELAY_TIME:
+        m_delayTime = (value < 0.0f) ? 0.0f : (value > 2000.0f) ? 2000.0f : value;
         break;
-
     case PARAM_BANDWIDTH:
         m_bandwidth = (value < 0.0f) ? 0.0f : (value > 1.0f) ? 1.0f : value;
+        if (m_filters)
+        {
+            for (int i = 0; i < m_numChannels; i++)
+                m_filters[i].SetCutoff(m_bandwidth);
+        }
         break;
-
-    case PARAM_INPUT_DIFFUSE_1:
-        m_inputDiffuse1 = (value < 0.0f) ? 0.0f : (value > 1.0f) ? 1.0f : value;
+    case PARAM_Q:
+        m_q = (value < 0.5f) ? 0.5f : (value > 10.0f) ? 10.0f : value;
+        if (m_filters)
+        {
+            for (int i = 0; i < m_numChannels; i++)
+                m_filters[i].SetQ(m_q);
+        }
         break;
-
-    case PARAM_INPUT_DIFFUSE_2:
-        m_inputDiffuse2 = (value < 0.0f) ? 0.0f : (value > 1.0f) ? 1.0f : value;
-        break;
-
-    case PARAM_DECAY_DIFFUSE_1:
-        m_decayDiffuse1 = (value < 0.0f) ? 0.0f : (value > 1.0f) ? 1.0f : value;
-        break;
-
-    case PARAM_DECAY_DIFFUSE_2:
-        m_decayDiffuse2 = (value < 0.0f) ? 0.0f : (value > 1.0f) ? 1.0f : value;
-        break;
-
     default: break;
     }
 }
@@ -600,39 +526,21 @@ void Plugin::GetParameterFloat(int index, float* value)
     case PARAM_DRY:
         *value = LINEAR_TO_DECIBELS(m_dry);
         break;
-
     case PARAM_WET:
         *value = LINEAR_TO_DECIBELS(m_wet);
         break;
-
     case PARAM_DECAY:
-        *value = m_decay;
+        *value = m_feedback;
         break;
-
-    case PARAM_PRE_DELAY:
-        *value = m_preDelay;
+    case PARAM_DELAY_TIME:
+        *value = m_delayTime;
         break;
-
     case PARAM_BANDWIDTH:
         *value = m_bandwidth;
         break;
-
-    case PARAM_INPUT_DIFFUSE_1:
-        *value = m_inputDiffuse1;
+    case PARAM_Q:
+        *value = m_q;
         break;
-
-    case PARAM_INPUT_DIFFUSE_2:
-        *value = m_inputDiffuse2;
-        break;
-
-    case PARAM_DECAY_DIFFUSE_1:
-        *value = m_decayDiffuse1;
-        break;
-
-    case PARAM_DECAY_DIFFUSE_2:
-        *value = m_decayDiffuse2;
-        break;
-
     default:
         *value = 0.0f;
         break;
@@ -660,11 +568,11 @@ FMOD_RESULT Release_Callback(FMOD_DSP_STATE* dsp_state)
 
 FMOD_RESULT Reset_Callback(FMOD_DSP_STATE* dsp_state)
 {
-    return FMOD_OK;
-}
-
-FMOD_RESULT Read_Callback(FMOD_DSP_STATE* dsp_state, float* inbuffer, float* outbuffer, unsigned int length, int inchannels, int* outchannels)
-{
+    Plugin* plugin = (Plugin*)dsp_state->plugindata;
+    if (plugin)
+    {
+        plugin->ClearDelay();
+    }
     return FMOD_OK;
 }
 
@@ -698,55 +606,10 @@ FMOD_RESULT SetFloat_Callback(FMOD_DSP_STATE* dsp_state, int index, float value)
     return FMOD_OK;
 }
 
-FMOD_RESULT SetInt_Callback(FMOD_DSP_STATE* dsp_state, int index, int value)
-{
-    return FMOD_OK;
-}
-
-FMOD_RESULT SetBool_Callback(FMOD_DSP_STATE* dsp_state, int index, FMOD_BOOL value)
-{
-    return FMOD_OK;
-}
-
-FMOD_RESULT SetData_Callback(FMOD_DSP_STATE* dsp_state, int index, void* data, unsigned int length)
-{
-    return FMOD_OK;
-}
-
 FMOD_RESULT GetFloat_Callback(FMOD_DSP_STATE* dsp_state, int index, float* value, char* valuestr)
 {
     Plugin* plugin = (Plugin*)dsp_state->plugindata;
     plugin->GetParameterFloat(index, value);
-    return FMOD_OK;
-}
-
-FMOD_RESULT GetInt_Callback(FMOD_DSP_STATE* dsp_state, int index, int* value, char* valuestr)
-{
-    return FMOD_OK;
-}
-
-FMOD_RESULT GetBool_Callback(FMOD_DSP_STATE* dsp_state, int index, FMOD_BOOL* value, char* valuestr)
-{
-    return FMOD_OK;
-}
-
-FMOD_RESULT GetData_Callback(FMOD_DSP_STATE* dsp_state, int index, void** data, unsigned int* length, char* valuestr)
-{
-    return FMOD_OK;
-}
-
-FMOD_RESULT SystemRegister_Callback(FMOD_DSP_STATE* dsp_state)
-{
-    return FMOD_OK;
-}
-
-FMOD_RESULT SystemDeregister_Callback(FMOD_DSP_STATE* dsp_state)
-{
-    return FMOD_OK;
-}
-
-FMOD_RESULT SystemMix_Callback(FMOD_DSP_STATE* dsp_state, int stage)
-{
     return FMOD_OK;
 }
 
@@ -758,15 +621,12 @@ extern "C"
 {
     F_EXPORT FMOD_DSP_DESCRIPTION* F_CALL FMODGetDSPDescription()
     {
-        FMOD_DSP_INIT_PARAMDESC_FLOAT(p_inputDiffuse1, "Input Diffuse 1", "", "Input diffusion amount - creates density", 0.0f, 1.0f, 0.5f);
-        FMOD_DSP_INIT_PARAMDESC_FLOAT(p_inputDiffuse2, "Input Diffuse 2", "", "Input diffusion amount - creates density", 0.0f, 1.0f, 0.5f);
-        FMOD_DSP_INIT_PARAMDESC_FLOAT(p_decayDiffuse1, "Decay Diffuse 1", "", "Decay diffusion - smears the reverb tail", 0.0f, 1.0f, 0.5f);
-        FMOD_DSP_INIT_PARAMDESC_FLOAT(p_decayDiffuse2, "Decay Diffuse 2", "", "Decay diffusion - smears the reverb tail", 0.0f, 1.0f, 0.5f);
-        FMOD_DSP_INIT_PARAMDESC_FLOAT(p_bandwidth, "Bandwidth", "", "Tone control - lower = darker reverb", 0.0f, 1.0f, 0.5f);
-        FMOD_DSP_INIT_PARAMDESC_FLOAT(p_decay, "Decay", "", "Reverb decay time / feedback", 0.0f, 0.95f, 0.5f);
-        FMOD_DSP_INIT_PARAMDESC_FLOAT(p_dry, "Dry", "dB", "Dry volume", -80.0f, 10.0f, 0.0f);
-        FMOD_DSP_INIT_PARAMDESC_FLOAT(p_wet, "Wet", "dB", "Wet volume", -80.0f, 10.0f, -6.0f);
-        FMOD_DSP_INIT_PARAMDESC_FLOAT(p_preDelay, "Pre Delay", "ms", "Time before reverb starts", 0.0f, 500.0f, 10.0f);
+        FMOD_DSP_INIT_PARAMDESC_FLOAT(p_delayTime, "Delay Time", "ms", "Delay time in milliseconds (0-2000ms)", 0.0f, 2000.0f, 500.0f);
+        FMOD_DSP_INIT_PARAMDESC_FLOAT(p_decay, "Decay", "", "Feedback amount - how many repeats (0 = none, 0.8 = max safe)", 0.0f, 0.8f, 0.0f);
+        FMOD_DSP_INIT_PARAMDESC_FLOAT(p_bandwidth, "Bandwidth", "", "Low-pass filter cutoff - lower = darker repeats", 0.0f, 1.0f, 1.0f);
+        FMOD_DSP_INIT_PARAMDESC_FLOAT(p_q, "Q", "", "Filter resonance - higher = more peak at cutoff", 0.5f, 10.0f, 0.707f);
+        FMOD_DSP_INIT_PARAMDESC_FLOAT(p_dry, "Dry", "dB", "Original signal volume", -80.0f, 10.0f, 0.0f);
+        FMOD_DSP_INIT_PARAMDESC_FLOAT(p_wet, "Wet", "dB", "Delayed signal volume", -80.0f, 10.0f, -6.0f);
 
         return &PluginCallbacks;
     }
