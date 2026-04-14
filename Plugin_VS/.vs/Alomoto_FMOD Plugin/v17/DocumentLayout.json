@@ -8,10 +8,6 @@
     },
     {
       "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Sierra Alomoto\\Documents\\Audio Programming Files\\FMOD-DSP\\Delay\\DelayPlugin\\Source\\DelayPlugin.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{C29D3259-357C-4225-8AC7-1018609BAE92}|Alomoto_FMOD Plugin\\Alomoto_FMOD Plugin.vcxproj|C:\\Users\\Elliot\\Documents\\Plugin_TBD\\New folder\\AET5430_FMODPlugin\\Plugin_VS\\Alomoto_FMOD Plugin\\KellyHardClip_Exsample.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{C29D3259-357C-4225-8AC7-1018609BAE92}|Alomoto_FMOD Plugin\\Alomoto_FMOD Plugin.vcxproj|solutionrelative:Alomoto_FMOD Plugin\\KellyHardClip_Exsample.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     }
   ],
   "DocumentGroupContainers": [
@@ -43,22 +39,10 @@
               "RelativeDocumentMoniker": "Alomoto_FMOD Plugin\\PluginProcessor.cpp",
               "ToolTip": "C:\\Users\\Elliot\\Documents\\Plugin_TBD\\New folder\\AET5430_FMODPlugin\\Plugin_VS\\Alomoto_FMOD Plugin\\PluginProcessor.cpp",
               "RelativeToolTip": "Alomoto_FMOD Plugin\\PluginProcessor.cpp",
-              "ViewState": "AgIAACYBAAAAAAAAAAAAACsBAAAmAAAAAAAAAA==",
+              "ViewState": "AgIAAAgBAAAAAAAAAAAAABkBAAAVAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
               "WhenOpened": "2026-04-09T16:07:10.099Z",
               "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "KellyHardClip_Exsample.cpp",
-              "DocumentMoniker": "C:\\Users\\Elliot\\Documents\\Plugin_TBD\\New folder\\AET5430_FMODPlugin\\Plugin_VS\\Alomoto_FMOD Plugin\\KellyHardClip_Exsample.cpp",
-              "RelativeDocumentMoniker": "Alomoto_FMOD Plugin\\KellyHardClip_Exsample.cpp",
-              "ToolTip": "C:\\Users\\Elliot\\Documents\\Plugin_TBD\\New folder\\AET5430_FMODPlugin\\Plugin_VS\\Alomoto_FMOD Plugin\\KellyHardClip_Exsample.cpp",
-              "RelativeToolTip": "Alomoto_FMOD Plugin\\KellyHardClip_Exsample.cpp",
-              "ViewState": "AgIAADYAAAAAAAAAAAAAAFkAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
-              "WhenOpened": "2026-04-09T15:55:48.399Z"
             }
           ]
         }
