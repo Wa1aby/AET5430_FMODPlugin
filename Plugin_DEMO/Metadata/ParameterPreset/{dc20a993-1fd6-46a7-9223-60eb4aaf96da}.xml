@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<objects serializationModel="Studio.02.03.00">
+	<object class="ParameterPreset" id="{dc20a993-1fd6-46a7-9223-60eb4aaf96da}">
+		<property name="name">
+			<value>Glitch</value>
+		</property>
+		<relationship name="folder">
+			<destination>{4d957df8-c26c-439b-9cb6-a71e2d3e6b20}</destination>
+		</relationship>
+		<relationship name="parameter">
+			<destination>{19f46d63-bff8-4a92-8396-5a125ba82df0}</destination>
+		</relationship>
+	</object>
+	<object class="GameParameter" id="{19f46d63-bff8-4a92-8396-5a125ba82df0}">
+		<property name="isGlobal">
+			<value>true</value>
+		</property>
+		<property name="initialValue">
+			<value>0</value>
+		</property>
+		<property name="isExposedRecursively">
+			<value>false</value>
+		</property>
+	</object>
+</objects>

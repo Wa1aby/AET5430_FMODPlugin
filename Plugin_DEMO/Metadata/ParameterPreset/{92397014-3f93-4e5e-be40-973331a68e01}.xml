@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<objects serializationModel="Studio.02.03.00">
+	<object class="ParameterPreset" id="{92397014-3f93-4e5e-be40-973331a68e01}">
+		<property name="name">
+			<value>TimeSkip</value>
+		</property>
+		<relationship name="folder">
+			<destination>{4d957df8-c26c-439b-9cb6-a71e2d3e6b20}</destination>
+		</relationship>
+		<relationship name="parameter">
+			<destination>{2a1e6230-e8ca-4084-889d-c647ff5ad815}</destination>
+		</relationship>
+	</object>
+	<object class="GameParameter" id="{2a1e6230-e8ca-4084-889d-c647ff5ad815}">
+		<property name="initialValue">
+			<value>0</value>
+		</property>
+		<relationship name="modulators">
+			<destination>{ff866305-ddec-41b7-8eaa-45ce029c09cd}</destination>
+		</relationship>
+	</object>
+	<object class="SeekModulator" id="{ff866305-ddec-41b7-8eaa-45ce029c09cd}">
+		<property name="nameOfPropertyBeingModulated">
+			<value>cursorPosition</value>
+		</property>
+		<property name="speedAscending">
+			<value>1.3999999761581421</value>
+		</property>
+	</object>
+</objects>

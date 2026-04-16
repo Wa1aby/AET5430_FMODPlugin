@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<objects serializationModel="Studio.02.03.00">
+	<object class="ParameterPreset" id="{3c810be0-a3bb-40c4-879d-be9dc8ff17af}">
+		<property name="name">
+			<value>Rewind_FF_SWITCH</value>
+		</property>
+		<relationship name="folder">
+			<destination>{4d957df8-c26c-439b-9cb6-a71e2d3e6b20}</destination>
+		</relationship>
+		<relationship name="parameter">
+			<destination>{86d69958-26c5-45ce-b943-c237177c0db5}</destination>
+		</relationship>
+	</object>
+	<object class="GameParameter" id="{86d69958-26c5-45ce-b943-c237177c0db5}">
+		<property name="parameterType">
+			<value>1</value>
+		</property>
+		<property name="maximum">
+			<value>2</value>
+		</property>
+		<property name="initialValue">
+			<value>0</value>
+		</property>
+	</object>
+</objects>

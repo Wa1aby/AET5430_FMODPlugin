@@ -15,7 +15,10 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="PluginProcessor.cpp">
+    <ClCompile Include="PluginProcessor_Pepperoni.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PluginProcessor_Cheese.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

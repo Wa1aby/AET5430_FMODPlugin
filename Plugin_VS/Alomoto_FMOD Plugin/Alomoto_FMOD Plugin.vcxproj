@@ -130,7 +130,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="PluginProcessor.cpp" />
+    <ClCompile Include="PluginProcessor_Cheese.cpp" />
+    <ClCompile Include="PluginProcessor_Pepperoni.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

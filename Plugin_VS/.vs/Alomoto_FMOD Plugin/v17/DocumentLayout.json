@@ -3,8 +3,12 @@
   "WorkspaceRootPath": "C:\\Users\\Elliot\\Documents\\Plugin_TBD\\New folder\\AET5430_FMODPlugin\\Plugin_VS\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{C29D3259-357C-4225-8AC7-1018609BAE92}|Alomoto_FMOD Plugin\\Alomoto_FMOD Plugin.vcxproj|C:\\Users\\Elliot\\Documents\\Plugin_TBD\\New folder\\AET5430_FMODPlugin\\Plugin_VS\\Alomoto_FMOD Plugin\\PluginProcessor.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{C29D3259-357C-4225-8AC7-1018609BAE92}|Alomoto_FMOD Plugin\\Alomoto_FMOD Plugin.vcxproj|solutionrelative:Alomoto_FMOD Plugin\\PluginProcessor.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+      "AbsoluteMoniker": "D:0:0:{C29D3259-357C-4225-8AC7-1018609BAE92}|Alomoto_FMOD Plugin\\Alomoto_FMOD Plugin.vcxproj|C:\\Users\\Elliot\\Documents\\Plugin_TBD\\New folder\\AET5430_FMODPlugin\\Plugin_VS\\Alomoto_FMOD Plugin\\PluginProcessor_Cheese.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{C29D3259-357C-4225-8AC7-1018609BAE92}|Alomoto_FMOD Plugin\\Alomoto_FMOD Plugin.vcxproj|solutionrelative:Alomoto_FMOD Plugin\\PluginProcessor_Cheese.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C29D3259-357C-4225-8AC7-1018609BAE92}|Alomoto_FMOD Plugin\\Alomoto_FMOD Plugin.vcxproj|C:\\Users\\Elliot\\Documents\\Plugin_TBD\\New folder\\AET5430_FMODPlugin\\Plugin_VS\\Alomoto_FMOD Plugin\\PluginProcessor_Pepperoni.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{C29D3259-357C-4225-8AC7-1018609BAE92}|Alomoto_FMOD Plugin\\Alomoto_FMOD Plugin.vcxproj|solutionrelative:Alomoto_FMOD Plugin\\PluginProcessor_Pepperoni.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Sierra Alomoto\\Documents\\Audio Programming Files\\FMOD-DSP\\Delay\\DelayPlugin\\Source\\DelayPlugin.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
@@ -17,11 +21,24 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 1,
+          "SelectedChildIndex": 0,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 0,
+              "Title": "PluginProcessor_Cheese.cpp",
+              "DocumentMoniker": "C:\\Users\\Elliot\\Documents\\Plugin_TBD\\New folder\\AET5430_FMODPlugin\\Plugin_VS\\Alomoto_FMOD Plugin\\PluginProcessor_Cheese.cpp",
+              "RelativeDocumentMoniker": "Alomoto_FMOD Plugin\\PluginProcessor_Cheese.cpp",
+              "ToolTip": "C:\\Users\\Elliot\\Documents\\Plugin_TBD\\New folder\\AET5430_FMODPlugin\\Plugin_VS\\Alomoto_FMOD Plugin\\PluginProcessor_Cheese.cpp",
+              "RelativeToolTip": "Alomoto_FMOD Plugin\\PluginProcessor_Cheese.cpp",
+              "ViewState": "AgIAAA8AAAAAAAAAAAAAAAMAAAACAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
+              "WhenOpened": "2026-04-16T14:03:14.621Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
               "Title": "DelayPlugin.cpp",
               "DocumentMoniker": "C:\\Users\\Sierra Alomoto\\Documents\\Audio Programming Files\\FMOD-DSP\\Delay\\DelayPlugin\\Source\\DelayPlugin.cpp",
               "RelativeDocumentMoniker": "..\\..\\..\\..\\..\\..\\Sierra Alomoto\\Documents\\Audio Programming Files\\FMOD-DSP\\Delay\\DelayPlugin\\Source\\DelayPlugin.cpp",
@@ -33,13 +50,13 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "PluginProcessor.cpp",
-              "DocumentMoniker": "C:\\Users\\Elliot\\Documents\\Plugin_TBD\\New folder\\AET5430_FMODPlugin\\Plugin_VS\\Alomoto_FMOD Plugin\\PluginProcessor.cpp",
-              "RelativeDocumentMoniker": "Alomoto_FMOD Plugin\\PluginProcessor.cpp",
-              "ToolTip": "C:\\Users\\Elliot\\Documents\\Plugin_TBD\\New folder\\AET5430_FMODPlugin\\Plugin_VS\\Alomoto_FMOD Plugin\\PluginProcessor.cpp",
-              "RelativeToolTip": "Alomoto_FMOD Plugin\\PluginProcessor.cpp",
-              "ViewState": "AgIAAFkCAAAAAAAAAAAowHgCAAABAAAAAAAAAA==",
+              "DocumentIndex": 1,
+              "Title": "PluginProcessor_Pepperoni.cpp",
+              "DocumentMoniker": "C:\\Users\\Elliot\\Documents\\Plugin_TBD\\New folder\\AET5430_FMODPlugin\\Plugin_VS\\Alomoto_FMOD Plugin\\PluginProcessor_Pepperoni.cpp",
+              "RelativeDocumentMoniker": "Alomoto_FMOD Plugin\\PluginProcessor_Pepperoni.cpp",
+              "ToolTip": "C:\\Users\\Elliot\\Documents\\Plugin_TBD\\New folder\\AET5430_FMODPlugin\\Plugin_VS\\Alomoto_FMOD Plugin\\PluginProcessor_Pepperoni.cpp",
+              "RelativeToolTip": "Alomoto_FMOD Plugin\\PluginProcessor_Pepperoni.cpp",
+              "ViewState": "AgIAAFYBAAAAAAAAAAAAAF4BAAA0AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
               "WhenOpened": "2026-04-09T16:07:10.099Z",
               "EditorCaption": ""

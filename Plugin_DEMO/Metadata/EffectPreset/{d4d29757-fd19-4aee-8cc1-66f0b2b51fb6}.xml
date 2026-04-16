@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<objects serializationModel="Studio.02.03.00">
+	<object class="EffectPreset" id="{d4d29757-fd19-4aee-8cc1-66f0b2b51fb6}">
+		<property name="name">
+			<value>Peak Sprungle</value>
+		</property>
+		<relationship name="folder">
+			<destination>{c03ac0e5-cdbd-4cf6-ab5c-9fedf672c60f}</destination>
+		</relationship>
+		<relationship name="effect">
+			<destination>{84b6dd48-eaad-4fc9-9172-a1433279998f}</destination>
+		</relationship>
+	</object>
+	<object class="PluginEffect" id="{84b6dd48-eaad-4fc9-9172-a1433279998f}">
+		<property name="bypass">
+			<value>true</value>
+		</property>
+		<relationship name="plugin">
+			<destination>{3a064cc2-bbab-44b3-9bf4-58df791e48f4}</destination>
+		</relationship>
+	</object>
+	<object class="Plugin" id="{3a064cc2-bbab-44b3-9bf4-58df791e48f4}">
+		<property name="identifier">
+			<value>Scrungler Delay</value>
+		</property>
+		<relationship name="pluginParameters">
+			<destination>{2dc330f5-f55a-4a2a-9511-42843fc2300b}</destination>
+			<destination>{6cc83c79-d93f-4906-b2af-5ba9a0caf667}</destination>
+			<destination>{0e561172-6201-4a20-92bc-947211f54e8c}</destination>
+			<destination>{de9f0e36-edbf-46b7-b850-c3bd21183fb6}</destination>
+			<destination>{b4e1caa7-7b96-4cd0-8d50-b2e62ffa5307}</destination>
+			<destination>{ca682d63-2069-4b7c-8cdf-7311aa90dad1}</destination>
+		</relationship>
+	</object>
+	<object class="FloatPluginParameter" id="{2dc330f5-f55a-4a2a-9511-42843fc2300b}">
+		<property name="name">
+			<value>Delay Time</value>
+		</property>
+		<property name="value">
+			<value>90</value>
+		</property>
+		<property name="curve">
+			<value>{(0.000000,0.000000)(1.000000,2000.000000)}</value>
+		</property>
+	</object>
+	<object class="FloatPluginParameter" id="{6cc83c79-d93f-4906-b2af-5ba9a0caf667}">
+		<property name="name">
+			<value>Decay</value>
+		</property>
+		<property name="value">
+			<value>0.949999988</value>
+		</property>
+		<property name="curve">
+			<value>{(0.000000,0.000000)(1.000000,0.950000)}</value>
+		</property>
+	</object>
+	<object class="FloatPluginParameter" id="{0e561172-6201-4a20-92bc-947211f54e8c}">
+		<property name="name">
+			<value>Bandwidth</value>
+		</property>
+		<property name="value">
+			<value>0.854999959</value>
+		</property>
+		<property name="curve">
+			<value>{(0.000000,0.000000)(1.000000,1.000000)}</value>
+		</property>
+	</object>
+	<object class="FloatPluginParameter" id="{de9f0e36-edbf-46b7-b850-c3bd21183fb6}">
+		<property name="name">
+			<value>Q</value>
+		</property>
+		<property name="value">
+			<value>0.5</value>
+		</property>
+		<property name="curve">
+			<value>{(-1.000000,0.500000)(0.000000,1.000000)(1.000000,2.000000)(2.000000,5.000000)(3.000000,10.000000)}</value>
+		</property>
+	</object>
+	<object class="FloatPluginParameter" id="{b4e1caa7-7b96-4cd0-8d50-b2e62ffa5307}">
+		<property name="name">
+			<value>Dry</value>
+		</property>
+		<property name="value">
+			<value>-80</value>
+		</property>
+		<property name="curve">
+			<value>{(-42.000000,-80.000000)(-39.000000,-60.000000)(-36.000000,-50.000000)(-32.000000,-40.000000)(-27.000000,-30.000000)(-20.000000,-20.000000)(-10.000000,-10.000000)(0.000000,0.000000)(10.000000,10.000000)}</value>
+		</property>
+	</object>
+	<object class="FloatPluginParameter" id="{ca682d63-2069-4b7c-8cdf-7311aa90dad1}">
+		<property name="name">
+			<value>Wet</value>
+		</property>
+		<property name="value">
+			<value>0</value>
+		</property>
+		<property name="curve">
+			<value>{(-42.000000,-80.000000)(-39.000000,-60.000000)(-36.000000,-50.000000)(-32.000000,-40.000000)(-27.000000,-30.000000)(-20.000000,-20.000000)(-10.000000,-10.000000)(0.000000,0.000000)(10.000000,10.000000)}</value>
+		</property>
+	</object>
+</objects>
