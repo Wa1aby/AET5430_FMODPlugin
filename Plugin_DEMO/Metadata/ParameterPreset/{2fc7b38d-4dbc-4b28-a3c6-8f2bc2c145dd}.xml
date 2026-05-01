@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<objects serializationModel="Studio.02.03.00">
+	<object class="ParameterPreset" id="{2fc7b38d-4dbc-4b28-a3c6-8f2bc2c145dd}">
+		<property name="name">
+			<value>Sprungle</value>
+		</property>
+		<relationship name="folder">
+			<destination>{4d957df8-c26c-439b-9cb6-a71e2d3e6b20}</destination>
+		</relationship>
+		<relationship name="parameter">
+			<destination>{b430d632-3dae-485f-9f1e-adbeb122216c}</destination>
+		</relationship>
+	</object>
+	<object class="GameParameter" id="{b430d632-3dae-485f-9f1e-adbeb122216c}">
+		<property name="isGlobal">
+			<value>true</value>
+		</property>
+		<property name="initialValue">
+			<value>0</value>
+		</property>
+		<property name="velocity">
+			<value>-1</value>
+		</property>
+		<property name="isExposedRecursively">
+			<value>false</value>
+		</property>
+		<relationship name="modulators">
+			<destination>{098891eb-f96a-4081-8e70-aed0119ea316}</destination>
+		</relationship>
+	</object>
+	<object class="SeekModulator" id="{098891eb-f96a-4081-8e70-aed0119ea316}">
+		<property name="nameOfPropertyBeingModulated">
+			<value>cursorPosition</value>
+		</property>
+		<property name="speedAscending">
+			<value>0.85999995470046997</value>
+		</property>
+	</object>
+</objects>
